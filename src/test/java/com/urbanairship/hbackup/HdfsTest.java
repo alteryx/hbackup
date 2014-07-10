@@ -41,11 +41,29 @@ public class HdfsTest {
                 new File(baseDir, "cluster1_sec2").getPath());
         cluster2Conf.set("fs.checkpoint.dir", new File(baseDir, "cluster2_sec1").getPath() + "," +
                 new File(baseDir, "cluster2_sec2").getPath());
-        
-        srcCluster = new MiniDFSCluster(0, cluster1Conf, 1, true, false, true, null, 
-                null, null, null);
-        sinkCluster = new MiniDFSCluster(0, cluster2Conf, 1, true, false, true, null, 
-                null, null, null);
+
+        srcCluster = new MiniDFSCluster.Builder(cluster1Conf)
+            .clusterId("testCluster1")
+            .nameNodePort(0)
+            .numDataNodes(1)
+            .format(true)
+            .manageNameDfsDirs(false)
+            .manageDataDfsDirs(true)
+            .build();
+
+        sinkCluster = new MiniDFSCluster.Builder(cluster2Conf)
+            .clusterId("testCluster2")
+            .nameNodePort(0)
+            .numDataNodes(1)
+            .format(true)
+            .manageNameDfsDirs(false)
+            .manageDataDfsDirs(true)
+            .build();
+
+        while (!srcCluster.isClusterUp() || !srcCluster.isDataNodeUp() ||
+               !sinkCluster.isClusterUp() || !sinkCluster.isDataNodeUp()) {
+            Thread.sleep(200);
+        }
 
         srcFs = srcCluster.getFileSystem();
         sinkFs = sinkCluster.getFileSystem();
@@ -72,19 +90,19 @@ public class HdfsTest {
             TestUtil.shutdownMiniDfs(sinkCluster);
         }
     }
-    
+
     @Test
     public void testHdfsToHdfs() throws Exception {
         final String FILE_CONTENTS = "Unicorns are better than ponies";
-        
+
         srcFs.mkdirs(new Path("/copysrc"));
         TestUtil.writeHdfsFile(srcFs, "/copysrc/myfile.txt", FILE_CONTENTS);
-        
-        HBackup hBackup = new HBackup(HBackupConfig.forTests(getSourceUrl("/copysrc"), 
+
+        HBackup hBackup = new HBackup(HBackupConfig.forTests(getSourceUrl("/copysrc"),
                 getSinkUrl("/copydest"), null, srcFs.getConf(),
                 sinkFs.getConf(), null, null));
         hBackup.runWithCheckedExceptions();
-        
+
         Assert.assertTrue(sinkFs.exists(new Path("/copydest/myfile.txt")));
         TestUtil.verifyHdfsContents(sinkFs, "/copydest/myfile.txt", FILE_CONTENTS);
     }
