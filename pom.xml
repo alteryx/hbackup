@@ -3,14 +3,26 @@
 
   <groupId>com.urbanairship</groupId>
   <artifactId>hbackup</artifactId>
-  <version>0.10.2-SNAPSHOT</version>
+  <version>1.0.3-cdh4.3.0-csd-1</version>
 
   <name>hbackup</name>
   <url>http://urbanairship.com</url>
   <scm>
-    <connection>scm:git:git@github.com:urbanairship/hbackup.git</connection>
+    <connection>scm:git:git@github.com:clearstorydata/hbackup.git</connection>
   </scm>
+  <properties>
+    <cdh.version>4.3.0</cdh.version>
+    <hadoop.dist.suffix>cdh${cdh.version}</hadoop.dist.suffix>
+    <hadoop.version>2.0.0-mr1-${hadoop.dist.suffix}</hadoop.version>
 
+    <!-- debian requirements -->
+    <jdeb.version>1.2</jdeb.version>
+    <maven-dependency-plugin.version>2.6</maven-dependency-plugin.version>
+    <debian.package>${project.artifactId}</debian.package>
+    <deb.lib.directory>/usr/share/${debian.package}</deb.lib.directory>
+    <deb.architecture>all</deb.architecture>
+
+  </properties>
 
   <build>
     <plugins>
@@ -50,10 +62,48 @@
           </execution>
         </executions>
       </plugin>
-
-
-
-</plugins>
+      <!-- Come up with a build number based on git SHA1 to include it in the .deb version -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+            <configuration>
+              <shortRevisionLength>8</shortRevisionLength>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>jdeb</artifactId>
+        <groupId>org.vafer</groupId>
+        <version>${jdeb.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <deb>
+                ${project.build.directory}/${project.artifactId}_${project.version}-${buildNumber}_${deb.architecture}.deb
+              </deb>
+              <dataSet>
+                <data>
+                  <src>${project.build.directory}/${project.build.finalName}.jar</src>
+                  <dst>${deb.lib.directory}/${artifactId}.jar</dst>
+                  <type>file</type>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
   <repositories>
     <repository>
@@ -67,15 +117,14 @@
   </repositories>
 
   <distributionManagement>
-    <repository>
-      <id>releases</id>
-      <url>http://nexus.prod.urbanairship.com/content/repositories/releases</url>
-    </repository>
-
     <snapshotRepository>
-      <id>releases</id>
-      <url>http://nexus.prod.urbanairship.com/content/repositories/snapshots</url>
+      <id>${distRepo.snapshots.id}</id>
+      <url>${distRepo.snapshots.url}</url>
     </snapshotRepository>
+    <repository>
+      <id>${distRepo.releases.id}</id>
+      <url>${distRepo.releases.url}</url>
+    </repository>
   </distributionManagement>
 
   <packaging>jar</packaging>
@@ -104,17 +153,22 @@
     <dependency>
       <groupId>net.java.dev.jets3t</groupId>
       <artifactId>jets3t</artifactId>
-      <version>0.8.1</version>
+      <version>0.9.0</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jets3t</groupId>
       <artifactId>synchronize</artifactId>
-      <version>0.8.1</version>
+      <version>0.9.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
-      <version>0.20.2-cdh3u2</version>
+      <version>${hadoop.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -147,11 +201,12 @@
       <artifactId>joda-time</artifactId>
       <version>1.6.2</version>
     </dependency>
-   <dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-test</artifactId>
-      <version>0.20.2-cdh3u2</version>
+      <artifactId>hadoop-minicluster</artifactId>
+      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
 </project>
