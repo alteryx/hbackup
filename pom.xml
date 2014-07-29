@@ -8,7 +8,7 @@
   <name>hbackup</name>
   <url>http://urbanairship.com</url>
   <scm>
-    <connection>scm:git:git@github.com:urbanairship/hbackup.git</connection>
+    <connection>scm:git:git@github.com:clearstorydata/hbackup.git</connection>
   </scm>
   <properties>
     <cdh.version>4.3.0</cdh.version>
