@@ -209,6 +209,7 @@ public class Jets3tSink extends Sink {
                                 partInputStream = file.getPartialInputStream(startAt, objLen);
                                 XorInputStream xis = new XorInputStream(partInputStream, startAt);
                                 S3Object s3ObjForPart = new S3Object(destS3Key);
+                                s3ObjForPart.setContentLength(objLen);
                                 s3ObjForPart.setDataInputStream(xis);
                                 MultipartPart thisPart = s3Service.multipartUploadPart(mpUpload, partNum+1, 
                                         s3ObjForPart);
