@@ -24,6 +24,14 @@ public class HdfsTest {
     private static MiniDFSCluster sinkCluster;
     private static FileSystem srcFs;
     private static FileSystem sinkFs;
+
+    /**
+     * On Hadoop 2.5.0 (CDH 5.3.0) we run into problems when trying to create more than one Mini
+     * HDFS cluster for an HDFS-to-HDFS test. This seems related to
+     * https://issues.apache.org/jira/browse/HDFS-3892. Our temporary solution is to only use one
+     * Mini HDFS cluster for both source and sink in the test.
+     */
+    private static boolean MULTIPLE_MINI_HDFS_CLUSTERS_SUPPORTED = false;
     
     @BeforeClass
     public static void setupHdfsClusters() throws Exception {
@@ -51,14 +59,18 @@ public class HdfsTest {
             .manageDataDfsDirs(true)
             .build();
 
-        sinkCluster = new MiniDFSCluster.Builder(cluster2Conf)
-            .clusterId("testCluster2")
-            .nameNodePort(0)
-            .numDataNodes(1)
-            .format(true)
-            .manageNameDfsDirs(false)
-            .manageDataDfsDirs(true)
-            .build();
+        if (MULTIPLE_MINI_HDFS_CLUSTERS_SUPPORTED) {
+          sinkCluster = new MiniDFSCluster.Builder(cluster2Conf)
+              .clusterId("testCluster2")
+              .nameNodePort(0)
+              .numDataNodes(1)
+              .format(true)
+              .manageNameDfsDirs(false)
+              .manageDataDfsDirs(true)
+              .build();
+        } else {
+          sinkCluster = srcCluster;
+        }
 
         while (!srcCluster.isClusterUp() || !srcCluster.isDataNodeUp() ||
                !sinkCluster.isClusterUp() || !sinkCluster.isDataNodeUp()) {
@@ -86,7 +98,7 @@ public class HdfsTest {
         if(srcCluster != null) {
             TestUtil.shutdownMiniDfs(srcCluster);
         }
-        if(sinkCluster != null) {
+        if(sinkCluster != null && sinkCluster != srcCluster) {
             TestUtil.shutdownMiniDfs(sinkCluster);
         }
     }
