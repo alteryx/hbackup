@@ -11,6 +11,6 @@ import java.io.IOException;
  */
 public interface RetryableChunk {
     public StreamingXor run() throws IOException;
-    
+
     public void commitAllChunks() throws IOException;
 }

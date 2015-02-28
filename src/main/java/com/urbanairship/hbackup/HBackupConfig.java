@@ -21,8 +21,8 @@ import org.jets3t.service.utils.MultipartUtils;
 
 public class HBackupConfig {
     private static final Logger log = LogManager.getLogger(HBackupConfig.class);
-    
-    // Config keys 
+
+    // Config keys
     public static final String CONF_FROM = "hbackup.from";
     public static final String CONF_TO = "hbackup.to";
     public static final String CONF_CONCURRENTCHUNKS = "hbackup.concurrentChunks";
@@ -79,23 +79,23 @@ public class HBackupConfig {
     /**
      * See {@link #optHelps} for an explanation of the parameters.
      */
-    public HBackupConfig(String from, String to, int concurrentFiles, boolean recursive, 
+    public HBackupConfig(String from, String to, int concurrentFiles, boolean recursive,
             String sourceS3AccessKey, String sourceS3Secret, String sinkS3AccessKey, String sinkS3Secret,
-            long s3PartSize, long s3MultipartThreshold, Configuration hdfsSourceConf, 
-            Configuration hdfsSinkConf, boolean mtimeCheck, String includePathsRegex, 
+            long s3PartSize, long s3MultipartThreshold, Configuration hdfsSourceConf,
+            Configuration hdfsSinkConf, boolean mtimeCheck, String includePathsRegex,
             String checksumUri, int chunkRetries, String checksumS3AccessKey, String checksumS3Secret,
             String fallbackS3AccessKey, String fallbackS3Secret, long staleMillis, int backupIntervalMinutes,
             int staleCheckIntervalMinutes, long mtimeAgeMillis) {
-        
+
         if(s3PartSize < MultipartUtils.MIN_PART_SIZE || s3PartSize > MultipartUtils.MAX_OBJECT_SIZE) {
-            throw new IllegalArgumentException("s3PartSize must be within the range " + 
+            throw new IllegalArgumentException("s3PartSize must be within the range " +
                     MultipartUtils.MIN_PART_SIZE + " to " + MultipartUtils.MAX_OBJECT_SIZE);
         }
-        
+
         if(s3MultipartThreshold < s3PartSize) {
             throw new IllegalArgumentException("s3MultipartThreshold must be >= s3PartSize");
         }
-        
+
         this.from = from;
         this.to = to;
         this.concurrentFiles = concurrentFiles;
@@ -120,13 +120,13 @@ public class HBackupConfig {
         if(fallbackS3AccessKey != null && fallbackS3Secret != null) {
             fallbackAwsCreds = new AWSCredentials(fallbackS3AccessKey, fallbackS3Secret);
         }
-        
+
         if(sourceS3AccessKey != null && sourceS3Secret != null) {
             this.s3SourceCredentials = new AWSCredentials(sourceS3AccessKey, sourceS3Secret);
         } else {
             this.s3SourceCredentials = fallbackAwsCreds;
         }
-        
+
         if(sinkS3AccessKey != null && sinkS3Secret != null) {
             this.s3SinkCredentials = new AWSCredentials(sinkS3AccessKey, sinkS3Secret);
         } else {
@@ -142,21 +142,21 @@ public class HBackupConfig {
 
     /**
      * Get config with defaults for all params. "From" and "to" have no defaults. S3 keys will be parsed
-     * from the system properties, or null. Hadoop config will be the default (parse normal Hadoop config 
+     * from the system properties, or null. Hadoop config will be the default (parse normal Hadoop config
      * files from the classpath).
      */
     public static HBackupConfig forTests(String from, String to, Configuration hdfsConf) {
         SystemConfiguration sysProps = new SystemConfiguration();
-        return new HBackupConfig(from, 
-                to, 
-                DEFAULT_CONCURRENT_FILES, 
-                true, 
-                sysProps.getString(CONF_SOURCES3ACCESSKEY), 
-                sysProps.getString(CONF_SOURCES3SECRET), 
-                sysProps.getString(CONF_SINKS3ACCESSKEY), 
+        return new HBackupConfig(from,
+                to,
+                DEFAULT_CONCURRENT_FILES,
+                true,
+                sysProps.getString(CONF_SOURCES3ACCESSKEY),
+                sysProps.getString(CONF_SOURCES3SECRET),
+                sysProps.getString(CONF_SINKS3ACCESSKEY),
                 sysProps.getString(CONF_SINKS3SECRET),
-                DEFAULT_S3_PART_SIZE, 
-                DEFAULT_S3_MULTIPART_THRESHOLD, 
+                DEFAULT_S3_PART_SIZE,
+                DEFAULT_S3_MULTIPART_THRESHOLD,
                 hdfsConf,
                 hdfsConf,
                 true,
@@ -205,11 +205,11 @@ public class HBackupConfig {
                 staleCheckIntervalMinutes,
                 0);
     }
-    
+
     /**
      * Get config with defaults for all params except those specified. For testing only.
      */
-    public static HBackupConfig forTests(String fromUri, String toUri, String hashUri, 
+    public static HBackupConfig forTests(String fromUri, String toUri, String hashUri,
             Configuration hdfsConf, String s3AccessKey, String s3Secret) {
         return new HBackupConfig(fromUri,
                 toUri,
@@ -236,12 +236,12 @@ public class HBackupConfig {
                 0,
                 0);
     }
-    
+
     /**
      * Get config with defaults for all params except those specified. For testing only.
      */
-    public static HBackupConfig forTests(String fromUri, String toUri, String hashUri, 
-            Configuration hdfsSrcConf, Configuration hdfsSinkConf, String s3AccessKey, 
+    public static HBackupConfig forTests(String fromUri, String toUri, String hashUri,
+            Configuration hdfsSrcConf, Configuration hdfsSinkConf, String s3AccessKey,
             String s3Secret) {
         return new HBackupConfig(fromUri,
                 toUri,
@@ -353,7 +353,7 @@ public class HBackupConfig {
                conf.getLong(CONF_MTIME_AGE_MILLIS, DEFAULT_MTIME_AGE_MILLIS));
 
     }
-    
+
     final public static OptHelp[] optHelps = new OptHelp[] {
             new OptHelp(CONF_FROM, "URI of data source, e.g. hdfs:///home/bob, hdfs://reports-master-0:7050/home/bob, s3://mybucket/a/b"),
             new OptHelp(CONF_TO, "URI of data sink"),
@@ -363,9 +363,9 @@ public class HBackupConfig {
             new OptHelp(CONF_SOURCES3SECRET, "When the source is an S3 bucket, use this to set its secret"),
             new OptHelp(CONF_SINKS3ACCESSKEY, "When the destination is an S3 bucket, use this to set its access key"),
             new OptHelp(CONF_SINKS3SECRET, "When the destination is an S3 bucket, use this to set its secret"),
-            new OptHelp(CONF_S3PARTSIZE, "When writing to S3 using the multipart API, what size of parts should the file be split into?", 
+            new OptHelp(CONF_S3PARTSIZE, "When writing to S3 using the multipart API, what size of parts should the file be split into?",
                     Long.toString(DEFAULT_S3_PART_SIZE)),
-            new OptHelp(CONF_S3MULTIPARTTHRESHOLD, "When writing to S3, use the multipart API for files larger than this", 
+            new OptHelp(CONF_S3MULTIPARTTHRESHOLD, "When writing to S3, use the multipart API for files larger than this",
                     Long.toString(DEFAULT_S3_MULTIPART_THRESHOLD)),
             new OptHelp(CONF_MTIMECHECK, "If true, re-transfer files when the source and sink mtime or length differs. "
                     + "If false, ignore the mtime and only check the length.", Boolean.toString(DEFAULT_MTIMECHECK)),
@@ -374,7 +374,7 @@ public class HBackupConfig {
             new OptHelp(CONF_CHECKSUMS3ACCESSKEY, "If the checksums are stored in a protected S3 bucket, specify the access key"),
             new OptHelp(CONF_CHECKSUMS3SECRET, "If the checksums are stored in a protected S3 bucket, specify the secret"),
             new OptHelp(CONF_FALLBACKS3ACCESSKEY, "Use this for all S3 accesses, if all your S3 usage is done under the same account"),
-            new OptHelp(CONF_FALLBACKS3SECRET, "Use this for all S3 accesses, if all your S3 usage is done under the same account"),            
+            new OptHelp(CONF_FALLBACKS3SECRET, "Use this for all S3 accesses, if all your S3 usage is done under the same account"),
             new OptHelp(CONF_STALEMILLIS, "When checking backed-up files for staleness, a file this much older than the source is \"stale\""),
             new OptHelp(CONF_BACKUPINTERVAL, "Determines how often the backup will be run. If the backup can't complete during the interval" +
                     " it will start immediately after the previous run."),
@@ -384,16 +384,16 @@ public class HBackupConfig {
                     "system time and a file to be backed up. A file with an age greater " +
                     "than or equal to this will be backedup.")
     };
-    
+
     public static class OptHelp {
         final String name;
         final String desc;
-        final String def; 
-        
+        final String def;
+
         public OptHelp(String optName, String help) {
             this(optName, help, null);
         }
-        
+
         public OptHelp(String optName, String help, String def) {
             this.name = optName;
             this.desc = help;

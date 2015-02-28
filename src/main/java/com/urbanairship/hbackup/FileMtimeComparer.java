@@ -14,20 +14,20 @@ import org.apache.log4j.Logger;
  */
 public class FileMtimeComparer implements Runnable {
     private static final Logger log = LogManager.getLogger(FileMtimeComparer.class);
-    
+
     private final HBackupConfig conf;
     private final Sink sink;
     private final SourceFile sourceFile;
     private final StaleCheckStats stats;
-    
-    public FileMtimeComparer(SourceFile sourceFile, Sink sink, HBackupConfig conf, 
+
+    public FileMtimeComparer(SourceFile sourceFile, Sink sink, HBackupConfig conf,
             StaleCheckStats stats) {
         this.conf = conf;
         this.sink = sink;
         this.sourceFile = sourceFile;
         this.stats = stats;
     }
-    
+
     @Override
     public void run() {
         String relativePath = sourceFile.getRelativePath();
@@ -38,7 +38,7 @@ public class FileMtimeComparer implements Runnable {
             return;
         }
         log.debug("Got source mtime " + sourceMtime + " for file " + relativePath);
-        
+
         Long sinkMTime = getSinkMtime();
         if(sinkMTime == null) {
             stats.failedFiles.incrementAndGet();
@@ -46,7 +46,7 @@ public class FileMtimeComparer implements Runnable {
             return;
         }
         log.debug("Got sink mtime " + sinkMTime + " for file " + relativePath);
-        
+
         if(sinkMTime < sourceMtime - conf.stalenessMillis) {
             log.info("File is stale: " + relativePath);
             stats.staleFiles.incrementAndGet();
@@ -55,13 +55,13 @@ public class FileMtimeComparer implements Runnable {
             stats.nonStaleFiles.incrementAndGet();
         }
     }
-    
+
     /**
      * @return the source file's mtime, or null if all retries were exhausted.
      */
     public Long getSourceMtime() {
-        int retriesRemaining = conf.numRetries; 
-        
+        int retriesRemaining = conf.numRetries;
+
         do {
             try {
                 return sourceFile.getMTime();
@@ -72,12 +72,12 @@ public class FileMtimeComparer implements Runnable {
         log.error("All retries exhausted getting source file mtime for " + sourceFile.getRelativePath());
         return null;
     }
-    
+
     /**
      * @return the sink file's mtime, or null if all retries were exhausted.
      */
     public Long getSinkMtime() {
-        int retriesRemaining = conf.numRetries; 
+        int retriesRemaining = conf.numRetries;
         do {
             try {
                 return sink.getMTime(sourceFile.getRelativePath());
@@ -88,5 +88,5 @@ public class FileMtimeComparer implements Runnable {
         log.error("All retries exhausted getting source file mtime for " + sourceFile.getRelativePath());
         return null;
     }
-      
+
 }

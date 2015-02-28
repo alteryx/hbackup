@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 /**
  */
 public class BackupServiceTest {
-    
+
     private static final Logger log = LogManager.getLogger(BackupServiceTest.class);
 
     //Get the source and dest memory filesystems
@@ -34,7 +34,7 @@ public class BackupServiceTest {
 
     @Test
     public void backupTest() throws Exception {
-        
+
         final String path = "/testStuff.dat";
         final int lengthOfFile = new Random().nextInt(4096);
         final long timeStampOfFile = new DateTime().getMillis();

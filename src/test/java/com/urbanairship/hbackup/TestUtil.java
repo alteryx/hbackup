@@ -35,12 +35,12 @@ public abstract class TestUtil {
         is.close();
         Assert.assertArrayEquals(expectedContents, buf);
     }
-    
+
 //    public static void runBackup(String source, String dest, Configuration conf) throws Exception {
 //        HBackupConfig config = HBackupConfig.forTests(source, dest, conf);
 //        new HBackup(config).runWithCheckedExceptions();
 //    }
-    
+
     public static void shutdownMiniDfs(MiniDFSCluster cluster) {
         // This code was mostly copied from HBase 0.90.4 HBaseClusterTestCase.java -DR
         try {
@@ -58,7 +58,7 @@ public abstract class TestUtil {
             FileSystem.closeAll();
         } catch (IOException e) { }
     }
-        
+
     public static void verifyHdfsContents(FileSystem fs, String path, String contents) throws Exception {
         if(!path.startsWith("/")) {
             // Never treat paths as relative to home direcotry
@@ -67,16 +67,16 @@ public abstract class TestUtil {
         InputStream is = fs.open(new Path(path));
         TestUtil.assertStreamEquals(contents.getBytes(), is);
     }
-    
-    
-    public static void verifyS3Obj(S3Service service, String bucket, String key, byte[] contents) 
+
+
+    public static void verifyS3Obj(S3Service service, String bucket, String key, byte[] contents)
             throws Exception {
         @SuppressWarnings("unused")
         S3Object[] listing = service.listObjects(bucket);
         S3Object s3Obj = null;
         try {
             s3Obj = service.getObject(bucket, key);
-            InputStream is = s3Obj.getDataInputStream(); 
+            InputStream is = s3Obj.getDataInputStream();
             int objSize = (int)s3Obj.getContentLength();
             if(objSize < 0) {
                 Assert.fail("S3 input stream had no bytes available to verify");
@@ -85,18 +85,18 @@ public abstract class TestUtil {
             TestUtil.assertStreamEquals(contents, is);
         } finally {
             if(s3Obj != null) {
-                s3Obj.closeDataInputStream(); 
+                s3Obj.closeDataInputStream();
             }
         }
     }
-    
+
     public static byte[] getRandomBuf(int size) {
         Random rng = new Random(0);
         byte[] buf = new byte[size];
         rng.nextBytes(buf);
         return buf;
     }
-    
+
     public static String expectedXor(byte[] bytes) {
         byte[] xor = new byte[8];
         for(int i=0; i<Math.min(bytes.length, 8); i++) {
@@ -105,15 +105,15 @@ public abstract class TestUtil {
         for(int i=8; i<bytes.length; i++) {
             xor[i%8] ^= bytes[i];
         }
-        
+
         return new String(Hex.encodeHex(xor));
     }
-    
+
     public static void writeHdfsFile(FileSystem fs, String path, String contents) throws Exception {
         OutputStream os = fs.create(new Path(path), true);
         os.write(contents.getBytes());
         os.close();
     }
-    
+
 
 }

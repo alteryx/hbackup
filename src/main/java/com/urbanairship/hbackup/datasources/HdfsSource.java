@@ -29,7 +29,7 @@ public class HdfsSource extends Source {
     private final URI baseUri;
     private final long mtimeAgeMillis;
 
-    public HdfsSource(URI sourceUri, HBackupConfig conf) 
+    public HdfsSource(URI sourceUri, HBackupConfig conf)
             throws IOException, URISyntaxException {
         this.baseUri = sourceUri;
         org.apache.hadoop.conf.Configuration hadoopConf = conf.hdfsSourceConf;
@@ -43,10 +43,10 @@ public class HdfsSource extends Source {
         addFiles(hbFiles, new Path(baseUri), recursive, "");
         return hbFiles;
     }
-    
+
     private void addFiles(List<SourceFile> files, Path path, boolean recursive, String relativeTo) throws IOException {
         FileStatus[] listing = fs.listStatus(path);
-        
+
         if(listing == null) {
             return;
         }
@@ -66,50 +66,50 @@ public class HdfsSource extends Source {
             }
         }
     }
-    
+
     /**
-     * An implementation of SourceFile that knows how to read from HDFS. 
+     * An implementation of SourceFile that knows how to read from HDFS.
      */
     private class HdfsFile implements SourceFile {
         private final FileStatus stat;
         private final FileSystem fs;
         private final String relativePath;
-        
+
         public HdfsFile(FileStatus stat, FileSystem fs, String relativePath) {
             this.stat = stat;
             this.fs = fs;
             this.relativePath = relativePath;
             assert !relativePath.startsWith("/");
         }
-        
+
         @Override
         public InputStream getFullInputStream() throws IOException {
             return fs.open(stat.getPath());
         }
-        
+
         @Override
         public InputStream getPartialInputStream(long offset, long len) throws IOException {
             FSDataInputStream is = fs.open(stat.getPath());
             is.seek(offset);
             return new LimitInputStream(is, len);
         }
-        
+
         /**
-         * @return The filename used by both the source and the target. This is relative 
-         * to the base directory of the source. For example, if the source file was 
-         * "hdfs://localhost:7080/base/mypics/pony.png", and the base URI was 
+         * @return The filename used by both the source and the target. This is relative
+         * to the base directory of the source. For example, if the source file was
+         * "hdfs://localhost:7080/base/mypics/pony.png", and the base URI was
          * "hdfs://localhost:7080.base", the relativePath would be "/mypics/pony.png"
          */
         @Override
         public String getRelativePath() {
             return relativePath;
         }
-        
+
         @Override
         public long getMTime() {
             return stat.getModificationTime();
         }
-        
+
         @Override
         public long getLength() {
             return stat.getLen();

@@ -3,13 +3,17 @@
 
   <groupId>com.urbanairship</groupId>
   <artifactId>hbackup</artifactId>
-  <version>1.0.3-cdh5.3.2-csd-1</version>
+  <version>1.0.3-cdh5.3.2-csd-1-SNAPSHOT</version>
 
   <name>hbackup</name>
   <url>http://urbanairship.com</url>
   <scm>
-    <connection>scm:git:git@github.com:clearstorydata/hbackup.git</connection>
+    <connection>scm:git:git://github.com/clearstorydata/hbackup.git</connection>
+    <developerConnection>scm:git:git@github.com:clearstorydata/hbackup.git</developerConnection>
+    <url>http://github.com/clearstorydata/hbackup/tree/master-csd</url>
+    <tag>HEAD</tag>
   </scm>
+
   <properties>
     <cdh.version>5.3.2</cdh.version>
     <hadoop.dist.suffix>cdh${cdh.version}</hadoop.dist.suffix>

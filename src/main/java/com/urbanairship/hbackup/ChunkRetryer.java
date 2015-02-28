@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  */
 public class ChunkRetryer implements Runnable {
     private static Logger log = LogManager.getLogger(ChunkRetryer.class);
-    
+
     private final FileTransferState file;
     private final RetryableChunk retryableRunnable;
     private final ChecksumService checksumService;
@@ -25,17 +25,17 @@ public class ChunkRetryer implements Runnable {
      * @param fileExceptions must be a thread safe set, e.g. one from Collections.synchronizedSet().
      * This is a set of HBFiles for which a transfer exception occurred.
      */
-    public ChunkRetryer(FileTransferState file, RetryableChunk retryableRunnable, 
+    public ChunkRetryer(FileTransferState file, RetryableChunk retryableRunnable,
             ChecksumService checksumService, int numRetries, Stats stats) {
         this.file = file;
         this.retryableRunnable = retryableRunnable;
         this.numRetries = numRetries;
         this.checksumService = checksumService;
     }
-    
+
     @Override
     public void run() {
-        String relativePath = file.getSourceFile().getRelativePath(); 
+        String relativePath = file.getSourceFile().getRelativePath();
         if(file.getState() == FileTransferState.State.ERROR) {
             log.info("Skipping chunk because some other chunk failed in its file: " + relativePath);
             file.chunkSkipped();
@@ -59,7 +59,7 @@ public class ChunkRetryer implements Runnable {
                 break;
             } catch (IOException e) {
                 if(tryNum >= numRetries) {
-                    log.error("Exhausted retries for chunk belonging to file " + 
+                    log.error("Exhausted retries for chunk belonging to file " +
                             relativePath, e);
                     file.chunkError(e);
                     return;
@@ -70,7 +70,7 @@ public class ChunkRetryer implements Runnable {
             }
         }
     }
-    
+
     private void saveChecksum() {
         // Use the same number for retries for saving the checksum as for saving the the files,
         // because whatever.

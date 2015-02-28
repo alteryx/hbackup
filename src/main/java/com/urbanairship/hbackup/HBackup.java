@@ -32,13 +32,13 @@ import com.urbanairship.hbackup.HBackupConfig.OptHelp;
  */
 public class HBackup implements Runnable {
     private static final Logger log = LogManager.getLogger(HBackup.class);
-        
+
     private final Source source;
     private final Sink sink;
     private final ChecksumService checksumService;
     private final HBackupConfig conf;
     private final Stats stats;
-    
+
     public HBackup(HBackupConfig conf) throws URISyntaxException, IOException {
         this.conf = conf;
         this.stats = new Stats();
@@ -51,7 +51,7 @@ public class HBackup implements Runnable {
             this.checksumService = null;
         }
     }
-    
+
     @Override
     public void run() {
         try {
@@ -60,13 +60,13 @@ public class HBackup implements Runnable {
             throw new RuntimeException(e);
         }
     }
-    
+
     public void runWithCheckedExceptions() throws IOException, InterruptedException {
         BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
-        
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(conf.concurrentFiles, conf.concurrentFiles, 
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(conf.concurrentFiles, conf.concurrentFiles,
                 Long.MAX_VALUE, TimeUnit.SECONDS, workQueue);
-        
+
         Pattern p = null;
         if(conf.includePathsRegex != null) {
             log.debug("Using input path filter regex: " + conf.includePathsRegex);
@@ -74,31 +74,31 @@ public class HBackup implements Runnable {
         } else {
             log.debug("Not configured for input path pattern matching, skipping");
         }
-        
+
         // Consider all files in the source
         for (SourceFile file: source.getFiles(conf.recursive)) {
             // Copy the file unless it's up to date in the sink
             try {
-                String relativePath = file.getRelativePath(); 
-                
+                String relativePath = file.getRelativePath();
+
                 // If regex file filtering is configured, check whether this file should be backed up
                 if(p != null) {
                     if(!p.matcher(relativePath).matches()) {
-                        log.debug("Skipping file " + relativePath + " because it didn't match regex " 
+                        log.debug("Skipping file " + relativePath + " because it didn't match regex "
                                 + conf.includePathsRegex);
                         continue;
                     }
                 }
-                
+
                 if(sink.existsAndUpToDate(file)) {
                     log.debug("Skipping file since the target is up to date: " + file.getRelativePath());
                     stats.numUpToDateFilesSkipped.incrementAndGet();
                     continue;
                 }
-                
+
                 // Ask the sink how the file should be chunked for transfer
                 List<RetryableChunk> chunks = sink.getChunks(file);
-                
+
                 log.debug("Queueing file for transfer: " + file.getRelativePath());
                 FileTransferState fileState = new FileTransferState(file, chunks.size(), stats);
                 for(RetryableChunk chunk: chunks) {
@@ -112,10 +112,10 @@ public class HBackup implements Runnable {
                 stats.numFilesFailed.incrementAndGet();
             }
         }
-       
+
         executor.shutdown();
         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        
+
         log.info("Files copied:      " + stats.numFilesSucceeded.get());
         log.info("Files skipped:     " + stats.numUpToDateFilesSkipped.get());
         log.info("Files failed:      " + stats.numFilesFailed.get());
@@ -123,14 +123,14 @@ public class HBackup implements Runnable {
         log.info("Chunks failed:     " + stats.numChunksFailed.get());
         log.info("Checksums saved:   " + stats.numChecksumsSucceeded.get());
         log.info("Checksums unsaved: " + stats.numChecksumsFailed.get());
-        
+
         // Re-throw the first exception seen by a worker thread, if any exceptions occurred
         if(!stats.fileFailureExceptions.isEmpty()) {
-            throw new IOException("Re-throwing worker exception from main thread", 
+            throw new IOException("Re-throwing worker exception from main thread",
                     stats.fileFailureExceptions.peek());
         }
     }
-    
+
     public Stats getStats() {
         return stats;
     }
@@ -140,7 +140,7 @@ public class HBackup implements Runnable {
             System.err.println(usage());
             System.exit(0);
         }
-        
+
         HBackup hBackup = null;
         try {
             HBackupConfig conf = HBackupConfig.fromEnv(args);
@@ -161,7 +161,7 @@ public class HBackup implements Runnable {
             System.exit(0);
         }
     }
-    
+
     public static String usage() {
         StringBuilder sb = new StringBuilder();
         sb.append("Usage: CLASSPATH=... java -Dprop=val -Dprop=val com.urbanairship.hbackup.HBackup [resource] [resource]\n");
@@ -169,7 +169,7 @@ public class HBackup implements Runnable {
         sb.append("You can set config values in the resource files or by setting JVM system properties with -Dprop=val.\n");
         sb.append("\n");
         sb.append("The available config values are:\n");
-        
+
         final int padNameTo = 32;
 
         for(OptHelp optHelp: HBackupConfig.optHelps) {
@@ -181,9 +181,9 @@ public class HBackup implements Runnable {
             }
             sb.append("\n");
         }
-        
+
         sb.append("\n");
-        sb.append("When specifying HDFS URIs, you can leave the host part blank (hdfs://dir/file.txt instead of hdfs://host:port/dir/file.txt) if " + 
+        sb.append("When specifying HDFS URIs, you can leave the host part blank (hdfs://dir/file.txt instead of hdfs://host:port/dir/file.txt) if " +
                 "the classpath contains a Hadoop configuration pointing to a default filesystem.\n");
         sb.append("\n");
         sb.append("Examples:\n");

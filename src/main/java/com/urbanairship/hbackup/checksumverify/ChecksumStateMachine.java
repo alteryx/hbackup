@@ -21,7 +21,7 @@ import com.urbanairship.hbackup.StreamingXor;
  */
 public class ChecksumStateMachine {
     private static Logger log = LogManager.getLogger(ChecksumStateMachine.class);
-    
+
     private final SourceFile sourceFile;
     private final int expectedChecksumFetchRetries;
     private final StreamingXor checksumSoFar = new StreamingXor();
@@ -31,9 +31,9 @@ public class ChecksumStateMachine {
     private String expectedChecksum = null;
     private State state = State.PRE_START;
     private int chunksInProgress;
-    
+
     public enum State {PRE_START, IN_PROGRESS, FINISHED, ERROR};
-    
+
     public ChecksumStateMachine(SourceFile sourceFile, int numChunks, int expectedChecksumFetchRetries,
             ChecksumService checksumService, ChecksumStats stats) {
         this.sourceFile = sourceFile;
@@ -42,7 +42,7 @@ public class ChecksumStateMachine {
         this.checksumService = checksumService;
         this.stats = stats;
     }
-    
+
     /**
      * @return whether the caller should proceed with checksum calculation. If false, something has
      * already gone wrong and its chunk should be skipped.
@@ -76,7 +76,7 @@ public class ChecksumStateMachine {
             stats.chunksSkipped.incrementAndGet();
             return false;
         case ERROR:
-            log.debug("chunkStarting() returning false because " + sourceFile.getRelativePath() + 
+            log.debug("chunkStarting() returning false because " + sourceFile.getRelativePath() +
                     " has already had an error");
             stats.chunksSkipped.incrementAndGet();
             return false;
@@ -86,7 +86,7 @@ public class ChecksumStateMachine {
             throw new AssertionError("Invalid state " + state);
         }
     }
-    
+
     public synchronized void chunkFinished(StreamingXor checksum) {
         switch(state) {
         case ERROR:
@@ -107,12 +107,12 @@ public class ChecksumStateMachine {
             throw new AssertionError("Invalid state " + state);
         }
     }
-    
+
     public synchronized void chunkReadError(IOException e) {
         if(e != null) {
             stats.workerExceptions.add(e);
         }
-        
+
         switch(state) {
         case IN_PROGRESS:
             stats.unreadableChunks.incrementAndGet();
@@ -123,10 +123,10 @@ public class ChecksumStateMachine {
             stats.unreadableChunks.incrementAndGet();
             return;
         default:
-            throw new AssertionError("Invalid state: " + state);    
+            throw new AssertionError("Invalid state: " + state);
         }
     }
-    
+
     public void chunkReadError() {
         chunkReadError(null);
     }

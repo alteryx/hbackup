@@ -14,14 +14,14 @@ import com.urbanairship.hbackup.datasources.InMemoryDataSource;
 import com.urbanairship.hbackup.datasources.Jets3tSource;
 
 /**
- * A "source" is a place from which files are retrieved. Each type of Source is an implementation of this 
- * abstract class. New Sources can easily be added by providing a Source implementation and modifying forUri() 
+ * A "source" is a place from which files are retrieved. Each type of Source is an implementation of this
+ * abstract class. New Sources can easily be added by providing a Source implementation and modifying forUri()
  * below.
  */
 public abstract class Source {
     public static Source forUri(URI uri, HBackupConfig conf) throws IOException, URISyntaxException {
         String scheme = uri.getScheme();
-        
+
         if (scheme.equals("s3")) {
             return new Jets3tSource(uri, conf);
         } else if (scheme.equals("hdfs") || scheme.equals("maprfs")) {
