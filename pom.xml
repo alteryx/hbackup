@@ -11,7 +11,7 @@
     <connection>scm:git:git@github.com:clearstorydata/hbackup.git</connection>
   </scm>
   <properties>
-    <cdh.version>5.3.0</cdh.version>
+    <cdh.version>5.3.2</cdh.version>
     <hadoop.dist.suffix>cdh${cdh.version}</hadoop.dist.suffix>
     <hadoop.version>2.5.0-${hadoop.dist.suffix}</hadoop.version>
 
