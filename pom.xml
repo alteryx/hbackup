@@ -99,7 +99,7 @@
               <dataSet>
                 <data>
                   <src>${project.build.directory}/${project.build.finalName}.jar</src>
-                  <dst>${deb.lib.directory}/${artifactId}.jar</dst>
+                  <dst>${deb.lib.directory}/${project.artifactId}.jar</dst>
                   <type>file</type>
                 </data>
               </dataSet>
