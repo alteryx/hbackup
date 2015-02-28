@@ -26,28 +26,28 @@ import com.urbanairship.hbackup.Source;
 
 public class Jets3tSource extends Source {
     private static final Logger log = LogManager.getLogger(Jets3tSource.class);
-    
+
     private final S3Service s3Service;
     private final String bucketName;
     private final String baseName;
-    
+
     public Jets3tSource(URI uri, HBackupConfig conf) throws IOException {
         this.bucketName = uri.getHost();
-        
+
         // The basename should consist of zero or more repetitions of "somestring/".
         // Specifically:
         //   1. Leading slashes are not allowed
         //   2. Trailing slashes are required except in the case of "/" by itself.
-        
+
         String tempBaseName = uri.getPath();
         if(!tempBaseName.endsWith("/")) {
             tempBaseName = tempBaseName + "/";
         }
         while(tempBaseName.startsWith("/")) {
-            tempBaseName = tempBaseName.substring(1);            
+            tempBaseName = tempBaseName.substring(1);
         }
         this.baseName = tempBaseName;
-        
+
         try {
             s3Service = new RestS3Service(conf.s3SourceCredentials);
         } catch (S3ServiceException e) {
@@ -73,17 +73,17 @@ public class Jets3tSource extends Source {
             throw new IOException(e);
         }
     }
-    
+
     private class Jets3tSourceFile implements SourceFile {
         private final S3Object s3Obj;
         private final String relativePath;
-        
+
         public Jets3tSourceFile(S3Object s3Obj, String relativePath) {
-            this.s3Obj = s3Obj; 
+            this.s3Obj = s3Obj;
             this.relativePath = relativePath;
             assert !relativePath.startsWith("/");
         }
-        
+
         @Override
         public InputStream getFullInputStream() throws IOException {
             try {
@@ -93,7 +93,7 @@ public class Jets3tSource extends Source {
                 throw new IOException(e);
             }
         }
-        
+
         @Override
         public InputStream getPartialInputStream(long offset, long len) throws IOException {
             try {
@@ -105,12 +105,12 @@ public class Jets3tSource extends Source {
                 throw new IOException(e);
             }
         }
-    
+
         @Override
         public String getRelativePath() {
             return relativePath;
         }
-    
+
         @Override
         public long getMTime() throws IOException {
             try {
@@ -133,12 +133,12 @@ public class Jets3tSource extends Source {
                             ", was " + metadataObj + ". Falling back to last-modified time");
                     return s3Obj.getLastModifiedDate().getTime();
                 }
-                
+
             } catch (ServiceException e) {
                 throw new IOException(e);
             }
         }
-    
+
         @Override
         public long getLength() {
             return s3Obj.getContentLength();

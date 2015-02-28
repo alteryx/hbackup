@@ -92,11 +92,11 @@ public class StaleCheckScheduled  extends AbstractScheduledService {
     protected Scheduler scheduler() {
         return Scheduler.newFixedRateSchedule(0, config.staleCheckIntervalMinutes, TimeUnit.MINUTES);
     }
-    
+
     public StaleCheckStats getLastRunStats() {
         return lastRunStats;
     }
-    
+
     public Timer getTimerMetric() {
         return timer;
     }

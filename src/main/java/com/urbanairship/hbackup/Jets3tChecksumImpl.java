@@ -21,11 +21,11 @@ import org.jets3t.service.model.S3Object;
 
 public class Jets3tChecksumImpl extends ChecksumService {
     private static final Logger log = LogManager.getLogger(Jets3tChecksumImpl.class);
-    
+
     private final String bucket;
     private final String baseName;
     private S3Service s3Service;
-    
+
     public Jets3tChecksumImpl(URI uri, HBackupConfig conf) throws IOException {
         this.bucket = uri.getHost();
         this.baseName = Util.canonicalizeBaseName(uri.getPath());
@@ -35,7 +35,7 @@ public class Jets3tChecksumImpl extends ChecksumService {
             throw new IOException(e);
         }
     }
-    
+
     @Override
     public void storeChecksum(String relativePath, String hexChecksum) throws IOException {
         S3Object s3Object;

@@ -12,10 +12,10 @@ import java.io.InputStream;
  */
 public class XorInputStream extends InputStream {
     private final InputStream wrapStream;
-    
+
     long inputOffset = 0;
     StreamingXor streamingXor = new StreamingXor();
-    
+
     public XorInputStream(InputStream wrapStream, long startingOffset) {
         this.wrapStream = wrapStream;
         this.inputOffset = startingOffset;
@@ -80,7 +80,7 @@ public class XorInputStream extends InputStream {
     public long skip(long nBytes) throws IOException {
         throw new RuntimeException("Skip not supported");
     }
-    
+
     public StreamingXor getStreamingXor() {
         return streamingXor;
     }

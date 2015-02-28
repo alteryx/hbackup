@@ -12,10 +12,10 @@ import org.joda.time.Seconds;
  */
 public class ScheduledBackupStats implements ScheduledBackupStatsMXBean {
 
-    
+
     private Stats stats = new Stats();
     private DateTime lastRunDate = new DateTime();
-    
+
     public void setStats(Stats stats) {
         this.stats = stats;
         this.lastRunDate = new DateTime();

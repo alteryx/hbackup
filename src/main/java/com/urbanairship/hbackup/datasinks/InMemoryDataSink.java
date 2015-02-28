@@ -83,7 +83,7 @@ public class InMemoryDataSink extends Sink {
 
         return sourceFile.getMTime();
     }
-    
+
     private SourceFile getSourceFile(String relativePath) {
 
         for (SourceFile sourceFile : inMemoryFileSystem) {

@@ -9,5 +9,5 @@ public class Constant {
     // metadata, under this metadata key. This lets us detect whether the source file was modified
     // since it was written.
     public static String S3_SOURCE_MTIME = "hbackup.sourcemtime";
-    
+
 }

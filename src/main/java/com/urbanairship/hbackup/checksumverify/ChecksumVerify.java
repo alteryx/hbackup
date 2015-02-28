@@ -22,18 +22,18 @@ import com.urbanairship.hbackup.SourceFile;
 
 public class ChecksumVerify implements Runnable {
     private static final Logger log = LogManager.getLogger(ChecksumVerify.class);
-    
+
     private final ChecksumService checksumService;
     private final Source source;
     private final ChecksumStats stats = new ChecksumStats();
     private final HBackupConfig config;
-    
+
     public static void main(String[] args) throws Exception {
         HBackupConfig config = HBackupConfig.fromEnv(args);
         new ChecksumVerify(config).runWithCheckedExceptions();
         System.exit(0); // We'll reach here if and only if no exception was thrown above
     }
-    
+
     public ChecksumVerify(HBackupConfig conf) throws IOException, URISyntaxException {
         checksumService = ChecksumService.forUri(new URI(conf.checksumUri), conf);
         URI dataUri = new URI(conf.from);
@@ -48,31 +48,31 @@ public class ChecksumVerify implements Runnable {
         source = Source.forUri(dataUri, conf);
         config = conf;
     }
-    
+
     /**
-     * 
+     *
      * @return whether all checksums were present and matched
      */
     public boolean runWithCheckedExceptions() throws IOException {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(config.concurrentFiles, 
-                config.concurrentFiles, Long.MAX_VALUE, TimeUnit.HOURS, 
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(config.concurrentFiles,
+                config.concurrentFiles, Long.MAX_VALUE, TimeUnit.HOURS,
                 new LinkedBlockingQueue<Runnable>());
         executor.prestartAllCoreThreads();
-        
+
         List<SourceFile> sourceFiles = source.getFiles(true);
         for(SourceFile file: sourceFiles) {
             int numChunks = (int)(file.getLength() / config.s3PartSize) + 1;
             long fileLen = file.getLength();
-            
-            ChecksumStateMachine fileChecksumStateMachine = new ChecksumStateMachine(file, numChunks, 
+
+            ChecksumStateMachine fileChecksumStateMachine = new ChecksumStateMachine(file, numChunks,
                     config.numRetries, checksumService, stats);
 
             log.debug("Queueing file " + file.getRelativePath() + " for checksumming in " +
                     numChunks + " chunks");
-            
+
             for(int i=0; i<numChunks; i++) {
                 long chunkStartOffset = i * config.s3PartSize;
-                long chunkLen = Math.min(fileLen - chunkStartOffset, config.s3PartSize); 
+                long chunkLen = Math.min(fileLen - chunkStartOffset, config.s3PartSize);
                 ChunkChecksummer chunkChecksummer = new ChunkChecksummer(file, chunkStartOffset, chunkLen,
                         config.numRetries, fileChecksumStateMachine);
                 executor.execute(chunkChecksummer);
@@ -85,7 +85,7 @@ public class ChecksumVerify implements Runnable {
         } catch (InterruptedException e) {
             log.warn("Interrupted waiting for executor to finish", e);
         }
-        
+
         int matchedChecksums = stats.matched.get();
         int mismatchedChecksums = stats.mismatched.get();
         int unreadableChecksums = stats.unreadableChecksums.get();
@@ -93,7 +93,7 @@ public class ChecksumVerify implements Runnable {
         int unreadableChunks = stats.unreadableChunks.get();
         int unreadableFiles = stats.unreadableFiles.get();
         int chunksSkipped = stats.chunksSkipped.get();
-        
+
         log.info("Checksums that matched: " + matchedChecksums);
         log.info("Checksums that didn't match: " + mismatchedChecksums);
         log.info("Unreadable checksums: " + unreadableChecksums);
@@ -101,13 +101,13 @@ public class ChecksumVerify implements Runnable {
         log.info("Unreadable chunks: " + unreadableChunks);
         log.info("Unreadable files: " + unreadableFiles);
         log.info("Chunks skipped due errors in same file: " + chunksSkipped);
-        
-        if(matchedChecksums == sourceFiles.size() && 
-                mismatchedChecksums == 0 && 
-                unreadableChecksums == 0 && 
-                missingChecksums == 0 && 
-                unreadableChunks == 0 && 
-                unreadableFiles == 0 && 
+
+        if(matchedChecksums == sourceFiles.size() &&
+                mismatchedChecksums == 0 &&
+                unreadableChecksums == 0 &&
+                missingChecksums == 0 &&
+                unreadableChunks == 0 &&
+                unreadableFiles == 0 &&
                 chunksSkipped == 0) {
             log.debug("All checksums were verified");
             return true;
@@ -115,7 +115,7 @@ public class ChecksumVerify implements Runnable {
             return false;
         }
     }
-    
+
     @Override
     public void run() {
         try {
@@ -132,4 +132,3 @@ public class ChecksumVerify implements Runnable {
         return stats;
     }
 }
-

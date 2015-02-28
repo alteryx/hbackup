@@ -17,23 +17,23 @@ import org.apache.log4j.Logger;
 
 public class StalenessCheck {
     private static final Logger log = LogManager.getLogger(StalenessCheck.class);
-    
+
     private final HBackupConfig config;
     private final Source source;
     private final Sink sink;
     private final StaleCheckStats stats = new StaleCheckStats();
-    
+
     public StalenessCheck(HBackupConfig config) throws IOException, URISyntaxException {
         this.config = config;
         this.source = Source.forUri(new URI(config.from), config);
         this.sink = Sink.forUri(new URI(config.to), config, new Stats());
     }
-    
+
     public int runWithCheckedExceptions() throws IOException, InterruptedException {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(config.concurrentFiles, 
-                config.concurrentFiles, Long.MAX_VALUE, TimeUnit.SECONDS, 
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(config.concurrentFiles,
+                config.concurrentFiles, Long.MAX_VALUE, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>());
-        
+
         List<SourceFile> sourceFiles = source.getFiles(true);
         if(sourceFiles.size() == 0) {
             log.error("Returning non-zero since there were no files in the source.");
@@ -45,15 +45,15 @@ public class StalenessCheck {
         }
         executor.shutdown();
         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        
+
         int numFreshFiles = stats.nonStaleFiles.get();
         int numStaleFiles = stats.staleFiles.get();
         int numFilesFailed = stats.failedFiles.get();
-        
+
         log.info("Up to date files: " + numFreshFiles);
         log.info("Stale files: " + numStaleFiles);
         log.info("Files that couldn't be checked: " + numFilesFailed);
-        
+
         if(numFreshFiles == sourceFiles.size() && numStaleFiles == 0 && numFilesFailed == 0) {
             log.debug("Returning zero since all files were up-to-date.");
             return 0;
@@ -62,11 +62,11 @@ public class StalenessCheck {
             return 2;
         }
     }
-    
+
     public StaleCheckStats getStats() {
         return stats;
     }
-    
+
     public static void main(String[] args) throws Exception {
         HBackupConfig hbackupConfig = HBackupConfig.fromEnv(args);
         try {

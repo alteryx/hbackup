@@ -19,7 +19,7 @@ import com.urbanairship.hbackup.datasinks.Jets3tSink;
  * Sinks can easily be added by providing a Sink implementation and modifying forUri() below.
  */
 public abstract class Sink {
-    public static Sink forUri(URI uri, HBackupConfig conf, Stats stats) 
+    public static Sink forUri(URI uri, HBackupConfig conf, Stats stats)
             throws IOException, URISyntaxException {
         String scheme = uri.getScheme();
 
@@ -39,18 +39,18 @@ public abstract class Sink {
             throw new IllegalArgumentException("Unknown protocol \"" + scheme + "\" in  URI " + uri);
         }
     }
-    
+
     /**
      * Check whether the target has sourceFile and if it's up to date.
-     * @return false if 
+     * @return false if
      *  - the target does not have sourceFile
      *  - the target was copied from a sourceFile with a different modification time. Each sink
      *    should remember the mtime of the source when it receives a file.
      *  - the target's version of sourceFile has a different length
-     *  Otherwise true (the target is up to date). 
+     *  Otherwise true (the target is up to date).
      */
     public abstract boolean existsAndUpToDate(SourceFile file) throws IOException;
-    
+
     public abstract List<RetryableChunk> getChunks(SourceFile file);
 
     /**

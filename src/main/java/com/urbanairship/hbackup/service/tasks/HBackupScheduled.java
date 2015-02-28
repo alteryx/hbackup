@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class HBackupScheduled extends AbstractScheduledService {
 
     private static final Logger log = LogManager.getLogger(HBackupScheduled.class);
-    
+
     private final HBackupConfig config;
     private final ScheduledBackupStats backupStatsMBean = new ScheduledBackupStats();
     private final Timer timer = Metrics.newTimer(HBackup.class, "Backup");

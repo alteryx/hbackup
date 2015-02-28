@@ -32,10 +32,10 @@ public class HdfsTest {
      * Mini HDFS cluster for both source and sink in the test.
      */
     private static boolean MULTIPLE_MINI_HDFS_CLUSTERS_SUPPORTED = false;
-    
+
     @BeforeClass
     public static void setupHdfsClusters() throws Exception {
-        // We have to specify the MiniDFSClusters' directories manually, otherwise both clusters 
+        // We have to specify the MiniDFSClusters' directories manually, otherwise both clusters
         // will try to use the hardcoded defaults and collide with each other.
         // This code is partly based on some of the code in MiniDFSCluster.java.
         File baseDir = new File(System.getProperty("test.build.data", "build/test/data"), "dfs/");
@@ -80,7 +80,7 @@ public class HdfsTest {
         srcFs = srcCluster.getFileSystem();
         sinkFs = sinkCluster.getFileSystem();
     }
-    
+
     /**
      * Remove all files in the source and sink filesystems between tests to get to a pristine state.
      */
@@ -92,7 +92,7 @@ public class HdfsTest {
             }
         }
     }
-    
+
     @AfterClass
     public static void shutdownMiniDfsClusters() {
         if(srcCluster != null) {
@@ -118,7 +118,7 @@ public class HdfsTest {
         Assert.assertTrue(sinkFs.exists(new Path("/copydest/myfile.txt")));
         TestUtil.verifyHdfsContents(sinkFs, "/copydest/myfile.txt", FILE_CONTENTS);
     }
-    
+
     /**
      * If a file exists in the destination but has a different mtime, it should get overwritten.
      */
@@ -128,29 +128,29 @@ public class HdfsTest {
         final String modifiedContents = "heroes in a half shell; turtle power";
         final String sourceName = "/from/file1.txt";
         final String sinkName = "/to/file1.txt";
-        
+
         // Set up file in source to be backed up
         TestUtil.writeHdfsFile(srcFs, sourceName, initialContents);
         TestUtil.verifyHdfsContents(srcFs, sourceName, initialContents);
-        
+
         // Backup from source to dest and verify that it worked
-        HBackupConfig conf = HBackupConfig.forTests(getSourceUrl("/from"), 
-                getSinkUrl("/to"), null, srcFs.getConf(), 
+        HBackupConfig conf = HBackupConfig.forTests(getSourceUrl("/from"),
+                getSinkUrl("/to"), null, srcFs.getConf(),
                 sinkFs.getConf(), null, null);
         new HBackup(conf).runWithCheckedExceptions();
         TestUtil.verifyHdfsContents(sinkFs, sinkName, initialContents);
-        
+
         // Verify that the sink file has the same mtime as the source file
         long sourceMtime = srcFs.getFileStatus(new Path(sourceName)).getModificationTime();
         long sinkMtime = sinkFs.getFileStatus(new Path(sinkName)).getModificationTime();
         Assert.assertEquals(sourceMtime, sinkMtime);
-        
+
         // Modify the source file and run another backup. The destination should pick up the change.
         TestUtil.writeHdfsFile(srcFs, sourceName, modifiedContents);
         new HBackup(conf).runWithCheckedExceptions();
         TestUtil.verifyHdfsContents(sinkFs, sinkName, modifiedContents);
     }
-    
+
     /**
      * Test regex file matching by backup up a folder containing two files, one that matches the regex
      * and one that doesn't.
@@ -161,7 +161,7 @@ public class HdfsTest {
         TestUtil.writeHdfsFile(srcFs, "/from/i_dont_match.txt", "Burrito");
 
         HBackupConfig conf = new HBackupConfig(
-                getSourceUrl("/from"), 
+                getSourceUrl("/from"),
                 getSinkUrl("/to"),
                 1,
                 true,
@@ -170,10 +170,10 @@ public class HdfsTest {
                 null,
                 null,
                 MultipartUtils.MIN_PART_SIZE,
-                MultipartUtils.MIN_PART_SIZE, 
+                MultipartUtils.MIN_PART_SIZE,
                 srcFs.getConf(),
                 sinkFs.getConf(),
-                false, 
+                false,
                 ".*do_match.*",
                 null,
                 0,
@@ -190,19 +190,19 @@ public class HdfsTest {
         Assert.assertEquals(1, hbackup.getStats().numFilesSucceeded.get());
         TestUtil.verifyHdfsContents(sinkFs, "/to/i_do_match.txt", "Taco");
     }
-    
+
     /**
      * Make sure that empty files are backed up.
      */
     @Test
     public void emptyFileTest() throws Exception {
         TestUtil.writeHdfsFile(srcFs, "/from/empty.txt", "");
-        HBackupConfig config = HBackupConfig.forTests(getSourceUrl("/from"), 
+        HBackupConfig config = HBackupConfig.forTests(getSourceUrl("/from"),
                 getSinkUrl("/to"), null, srcFs.getConf(), sinkFs.getConf(), null, null);
         new HBackup(config).runWithCheckedExceptions();
         Assert.assertTrue(sinkFs.exists(new Path("/to/empty.txt")));
     }
-    
+
     private static String getSourceUrl(String dirName) {
         if(dirName.startsWith("/")) {
             dirName = dirName.substring(1);

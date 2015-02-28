@@ -35,7 +35,7 @@ public class HdfsSink extends Sink {
     private final String baseName;
     private final FileSystem fs;
     private final HBackupConfig conf;
-    
+
     public HdfsSink(URI uri, HBackupConfig conf, Stats stats, ChecksumService checksumService) throws IOException, URISyntaxException {
         String tempBaseName = uri.getPath();
         if(!tempBaseName.startsWith("/")) {
@@ -49,7 +49,7 @@ public class HdfsSink extends Sink {
         org.apache.hadoop.conf.Configuration hadoopConf = conf.hdfsSinkConf;
         this.fs = FileSystem.get(uri, hadoopConf);
     }
-    
+
     @Override
     public boolean existsAndUpToDate(SourceFile sourceFile) throws IOException {
         Path path = new Path(baseName + sourceFile.getRelativePath());
@@ -66,7 +66,7 @@ public class HdfsSink extends Sink {
                 return true;
             }
             if(sourceMtime != sinkMtime) {
-                log.debug("Different mtime source and sink, " + sourceMtime + " vs " + sinkMtime + 
+                log.debug("Different mtime source and sink, " + sourceMtime + " vs " + sinkMtime +
                         ".  Will re-upload " + sourceFile.getRelativePath());
                 return false;
             } else {
@@ -79,7 +79,7 @@ public class HdfsSink extends Sink {
             return false;
         }
     }
-    
+
     /**
      * @return the file mtime as UTC epoch millis if the file exists, or null if it doesn't exist.
      */
@@ -104,7 +104,7 @@ public class HdfsSink extends Sink {
             public StreamingXor run() throws IOException {
                 InputStream is = null;
                 FSDataOutputStream os = null;
-                
+
                 try {
                     String relativePath = sourceFile.getRelativePath();
                     assert !relativePath.startsWith("/");
@@ -115,12 +115,12 @@ public class HdfsSink extends Sink {
                     IOUtils.copyLarge(xis, os);
                     is.close();
                     os.close();
-                    
+
                     // Set the atime and mtime of the sink file equal to the mtime of the source file.
                     fs.setTimes(destPath, sourceFile.getMTime(), sourceFile.getMTime());
 
                     log.debug("Done transferring file to HDFS: " + relativePath);
-                    
+
                     return xis.getStreamingXor();
                 } finally {
                     if(is != null) {
