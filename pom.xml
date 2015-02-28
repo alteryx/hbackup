@@ -3,7 +3,7 @@
 
   <groupId>com.urbanairship</groupId>
   <artifactId>hbackup</artifactId>
-  <version>1.0.3-cdh5.3.2-csd-1</version>
+  <version>1.0.3-cdh5.3.2-csd-2-SNAPSHOT</version>
 
   <name>hbackup</name>
   <url>http://urbanairship.com</url>
